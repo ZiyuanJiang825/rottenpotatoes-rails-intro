@@ -1,5 +1,8 @@
 class MoviesController < ApplicationController
 
+  before_action :get_sort_filter_params, only: :index
+  after_action  :store_sorting_filter_params, only: :index
+
   def show
     id = params[:id] # retrieve movie ID from URI route
     @movie = Movie.find(id) # look up movie by unique ID
@@ -8,22 +11,14 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.all_ratings
-    if params[:ratings] != nil
-      @ratings_list = params[:ratings].keys
-    end
 
-    if session[:ratings] != nil
-      @ratings_list = @rating_list || session[:ratings].keys
-    end
-
-    if @ratings_list.nil?
-      @ratings_list = []
-    end
+    @ratings_to_show = params[:ratings].keys if params[:ratings] != nil
     if params[:ratings_to_show] != nil
-      @ratings_list = params[:ratings_to_show].delete('["" ]').split(",")
+      @ratings_to_show = params[:ratings_to_show].delete('["" ]').split(",")
     end
-    @ratings_to_show = @ratings_list
-    @sort = params[:sort] || session[:sort]
+
+
+    @sort = params[:sort]
     case @sort
     when 'title'
      @title_header = 'hilite bg-warning'
@@ -32,9 +27,9 @@ class MoviesController < ApplicationController
     end
 
     if @sort
-      @movies = Movie.with_ratings(@ratings_list).order(@sort)
+      @movies = Movie.with_ratings(@ratings_to_show).order(@sort)
     else
-      @movies = Movie.with_ratings(@ratings_list)
+      @movies = Movie.with_ratings(@ratings_to_show)
     end
 
   end
@@ -72,5 +67,15 @@ class MoviesController < ApplicationController
   # This helps make clear which methods respond to requests, and which ones do not.
   def movie_params
     params.require(:movie).permit(:title, :rating, :description, :release_date)
+  end
+
+  def get_sort_filter_params
+    @ratings_to_show = session[:ratings_to_show] || []
+    @sort = session[:sort]
+  end
+
+  def store_sorting_filter_params
+    session[:ratings_to_show] = @ratings_to_show
+    session[:sort] = @sort
   end
 end
