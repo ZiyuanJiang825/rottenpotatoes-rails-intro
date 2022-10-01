@@ -18,7 +18,7 @@ class MoviesController < ApplicationController
     end
 
 
-    @sort = params[:sort]
+    @sort = params[:sort] if params[:sort] != nil
     case @sort
     when 'title'
      @title_header = 'hilite bg-warning'
