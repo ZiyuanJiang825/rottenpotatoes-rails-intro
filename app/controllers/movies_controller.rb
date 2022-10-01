@@ -1,7 +1,5 @@
 class MoviesController < ApplicationController
 
-  before_action :get_sort_filter_params, only: :index
-  after_action  :store_sorting_filter_params, only: :index
 
   def show
     id = params[:id] # retrieve movie ID from URI route
@@ -11,12 +9,14 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.all_ratings
-    if params[:ratings] == nil
-      @ratings_to_show = @all_ratings
-    end
 
-    @ratings_to_show = params[:ratings].keys if params[:ratings] != nil
-    @sort = params[:sort] if params[:sort] != nil
+
+    if params[:ratings].nil?
+      @ratings_to_show = session[:ratings_to_show].nil? ? @all_ratings : session[:ratings_to_show]
+    else
+      @ratings_to_show = params[:ratings].keys
+    end
+    @sort = params[:sort].nil? ? session[:sort] : params[:sort]
     case @sort
     when 'title'
      @title_header = 'hilite bg-warning'
@@ -28,6 +28,13 @@ class MoviesController < ApplicationController
       @movies = Movie.with_ratings(@ratings_to_show).order(@sort)
     else
       @movies = Movie.with_ratings(@ratings_to_show)
+    end
+    session[:ratings_to_show] = @ratings_to_show
+    session[:sort] = @sort
+
+    if !(params[:sort].present? && params[:ratings_to_show].present?)
+      redirect_to movies_path(sort: session[:sort], ratings_to_show: session[:ratings_to_show])
+      return
     end
 
   end
@@ -67,13 +74,4 @@ class MoviesController < ApplicationController
     params.require(:movie).permit(:title, :rating, :description, :release_date)
   end
 
-  def get_sort_filter_params
-    @ratings_to_show = session[:ratings] || []
-    @sort = session[:sort]
-  end
-
-  def store_sorting_filter_params
-    session[:ratings] = @ratings_to_show
-    session[:sort] = @sort
-  end
 end
