@@ -7,7 +7,11 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.all
+    @all_ratings = Movie.all_ratings
+    @ratings_to_show = ['G','PG','PG-13','R','NC-17']
+    @ratings_list = params[:ratings] || session[:ratings] || @all_ratings.map{ |rating| [rating,1] }.to_h
+    @ratings_to_show = @ratings_list
+    @movies = Movie.with_ratings(@ratings_list)
   end
 
   def new
