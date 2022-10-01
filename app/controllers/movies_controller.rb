@@ -11,7 +11,10 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.all_ratings
-    @ratings_to_show = @all_ratings
+    if session[:ratings_to_show] == nil
+      @ratings_to_show = @all_ratings
+    end
+    
     @ratings_to_show = params[:ratings].keys if params[:ratings] != nil
     if params[:ratings_to_show] != nil
       @ratings_to_show = params[:ratings_to_show].delete('["" ]').split(",")
