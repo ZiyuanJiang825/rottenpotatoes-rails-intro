@@ -11,16 +11,11 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.all_ratings
-    if session[:ratings_to_show] == nil
+    if params[:ratings] == nil
       @ratings_to_show = @all_ratings
     end
-    
+
     @ratings_to_show = params[:ratings].keys if params[:ratings] != nil
-    if params[:ratings_to_show] != nil
-      @ratings_to_show = params[:ratings_to_show].delete('["" ]').split(",")
-    end
-
-
     @sort = params[:sort] if params[:sort] != nil
     case @sort
     when 'title'
@@ -73,12 +68,12 @@ class MoviesController < ApplicationController
   end
 
   def get_sort_filter_params
-    @ratings_to_show = session[:ratings_to_show] || []
+    @ratings_to_show = session[:ratings] || []
     @sort = session[:sort]
   end
 
   def store_sorting_filter_params
-    session[:ratings_to_show] = @ratings_to_show
+    session[:ratings] = @ratings_to_show
     session[:sort] = @sort
   end
 end
