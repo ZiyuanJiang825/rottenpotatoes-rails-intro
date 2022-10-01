@@ -24,17 +24,16 @@ class MoviesController < ApplicationController
      @release_date_header = 'hilite bg-warning'
     end
 
-    if !(params[:sort].present? && params[:ratings_to_show].present?)
-      session[:ratings_to_show] = @ratings_to_show
-      session[:sort] = @sort
-      redirect_to movies_path(sort: session[:sort], ratings_to_show: session[:ratings_to_show])
-      return
-    end
-
     if @sort
       @movies = Movie.with_ratings(@ratings_to_show).order(@sort)
     else
       @movies = Movie.with_ratings(@ratings_to_show)
+    end
+    session[:ratings_to_show] = @ratings_to_show
+    session[:sort] = @sort
+    if !(params[:sort].present? && params[:ratings].present?)
+      redirect_to movies_path(sort: session[:sort], ratings: Hash[session[:ratings_to_show].map {|v| [v,1]}])
+      return
     end
 
   end
